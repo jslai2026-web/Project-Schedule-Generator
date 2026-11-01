@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>Project Schedule Generator</title>
+<style>
+:root{--bg:#f6f7f9;--cd:#fff;--tx:#1b1f24;--mu:#667085;--bd:#e2e5ea;--ac:#2557d6;--cr:#d1342f;--ok:#157f3b;--wn:#b26a00;--hd:#eef1f6;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--cd:#1a1e24;--tx:#e8eaed;--mu:#9aa3b0;--bd:#2d333b;--ac:#6b93f5;--cr:#f0777c;--ok:#4cc27a;--wn:#e0a040;--hd:#222831;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111418;--cd:#1a1e24;--tx:#e8eaed;--mu:#9aa3b0;--bd:#2d333b;--ac:#6b93f5;--cr:#f0777c;--ok:#4cc27a;--wn:#e0a040;--hd:#222831;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}h1{font-size:22px;margin:4px 0}h2{font-size:16px;margin:0 0 10px}
+.sub{color:var(--mu);margin:0 0 14px}.cd{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.w{overflow-x:auto}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:2px}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:6px;padding:5px 7px;width:100%}
+textarea{min-height:120px;font-size:13px}
+table{border-collapse:collapse;width:100%;min-width:720px}th,td{border-bottom:1px solid var(--bd);padding:4px 6px;text-align:left}
+th{background:var(--hd);white-space:nowrap}td input{min-width:60px}.ph td{background:var(--hd);font-weight:600}
+button{font:inherit;border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:6px;padding:5px 12px;cursor:pointer;margin-right:6px}
+button:hover{border-color:var(--ac)}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button.x{color:var(--cr);padding:2px 8px;margin:0}
+.k{border:1px solid var(--bd);border-radius:8px;padding:8px 10px}.k b{display:block;font-size:16px}.k span{font-size:12px;color:var(--mu)}
+.cr{color:var(--cr)}.wn{color:var(--wn)}.ok{color:var(--ok)}#er{display:none;color:var(--cr);font-weight:600;margin-bottom:10px}
+li{margin:4px 0}.lg span{margin-right:14px;font-size:12px;color:var(--mu)}.lg i{display:inline-block;width:12px;height:8px;margin-right:4px}
+@media print{button{display:none}}
+#sb{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--cd);border-right:1px solid var(--bd);z-index:20;padding-top:env(safe-area-inset-top,0px);display:none;flex-direction:column;overflow-y:auto}
+body.sbo #sb{display:flex}body.sbo #sbt{display:none}
+#sbt{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:8px;z-index:20;margin:0}
+body:not(.sbo) main{padding-top:52px}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:10px}.sh button{margin:0}
+.pi{margin:4px 10px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;position:relative}
+.pi.on{border-color:var(--ac);background:var(--hd)}.pi b{display:block;padding-right:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pi span{font-size:12px;color:var(--mu)}
+.pi .x{position:absolute;top:4px;right:4px;font-size:12px}
+@media (min-width:900px){body.sbo main{margin-left:250px;margin-right:auto}}
+.pi b{padding-right:84px}.ab{position:absolute;top:4px;right:4px;display:flex;gap:4px}.ab button{margin:0;padding:1px 7px;font-size:12px}.ab .x{position:static}
+@media print{#sb,#sbt{display:none!important}body.sbo main{margin-left:auto}}
+.hb{cursor:pointer}.hb:hover{opacity:.75}
+#tip{position:fixed;z-index:9;pointer-events:none;display:none;max-width:270px;background:var(--tx);color:var(--cd);padding:8px 11px;border-radius:8px;font-size:12px;line-height:1.5;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+#tip:after{content:"";position:absolute;left:var(--ax,50%);margin-left:-6px;bottom:-6px;border:6px solid transparent;border-bottom:0;border-top-color:var(--tx)}
+#tip.dn:after{bottom:auto;top:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--tx)}
+</style></head><body><aside id="sb"><div class="sh"><b>Projects</b><button onclick="tgl()" title="Hide panel">‹ Hide</button></div><input id="ps" placeholder="Search projects…" oninput="side()" style="margin:0 10px 6px;width:calc(100% - 20px)"><div id="pl"></div><button class="p" onclick="addP()" style="margin:8px 10px">+ Add project</button></aside>
+<button id="sbt" onclick="tgl()" title="Show projects">☰ Projects</button><main>
+<h1>Project Schedule Generator <small id="dst" style="font-size:12px;font-weight:600;margin-left:8px"></small></h1>
+<p class="sub">Enter the basics and scope of work. The app builds the WBS, critical path schedule, bar chart, S-curve, analysis, summary and recommendations. Everything stays in your browser.</p>
+<div class="cd"><h2>1. Project inputs</h2>
+<div class="g">
+<div><label>Project name</label><input id="nm" value="Watermain Replacement"></div>
+<div><label>Schedule date created</label><input id="cr" type="date"></div>
+<div><label>Created by</label><input id="by" placeholder="Name"></div>
+<div><label>Revision no.</label><input id="rv" value="0"></div>
+<div><label>Schedule starts from</label><select id="an"><option value="pl">Start of Initiation &amp; Planning</option><option value="ex">Start of Execution</option></select></div>
+<div><label>Start date (for the option selected)</label><input id="st" type="date"></div>
+<div><label>Working days per week</label><select id="wk"><option>5</option><option>6</option><option>7</option></select></div>
+<div><label>Base budget, excluding contingency ($, 0 = effort-based)</label><input id="bu" type="number" value="1500000"></div>
+<div><label>Contingency amount ($, held outside scope; 0 = auto)</label><input id="ca" type="number" min="0" value="0"></div>
+<div><label>Schedule contingency (working days; 0 = auto 10%)</label><input id="cdv" type="number" min="0" value="0"></div>
+<div><label>Target finish applies to</label><select id="tt"><option value="cl">Project finish (end of Closeout)</option><option value="ex">End of Execution</option></select></div>
+<div><label>Target finish date (optional)</label><input id="tg" type="date"></div>
+<div><label>Complexity (scales standard phases)</label><select id="cx"><option value=".75">Low</option><option value="1" selected>Medium</option><option value="1.5">High</option></select></div>
+<div><label><input type="checkbox" id="ds" checked style="width:auto"> Include design phase</label><label><input type="checkbox" id="pc" checked style="width:auto"> Include procurement phase</label></div></div>
+<label style="margin-top:10px">Scope of work: one item per line as <i>Name, days</i>. Start a line with + to run it in parallel with the line above; otherwise items run in sequence.</label>
+<textarea id="sc">Utility locates & traffic control, 5
++Site clearing, 8
+Excavation & trenching, 20
+Install watermain pipe, 30
+Backfill & compaction, 15
+Pavement restoration, 12</textarea>
+<p><button class="p" onclick="gen()">Generate schedule</button><button onclick="window.print()">Print / save PDF</button><button onclick="fsave()">Save file</button><button onclick="fopenClick()">Open file</button><input type="file" id="fi" accept=".json,application/json" style="display:none" onchange="var f=this.files[0];this.value='';if(f)fopen(f)"><button onclick="exp()">Export to Excel (.xlsx)</button> <span id="xm" class="sub"></span></p></div>
+<div id="er"></div>
+<div class="cd"><h2>2. WBS &amp; activities (editable: change durations, predecessor IDs or costs and everything recalculates)</h2><input id="as" placeholder="Search activities by keyword, WBS or ID…" oninput="fa()" style="max-width:380px;margin-bottom:8px"><div class="w"><table id="tb"></table></div></div>
+<div class="cd"><h2>3. Bar chart (Gantt)</h2><div class="w" id="gt"></div>
+<div class="lg"><span><i style="background:var(--cr)"></i>Critical</span><span><i style="background:var(--ac)"></i>Non-critical</span><span><i style="background:var(--ac);opacity:.25"></i>Float</span><span><i style="background:var(--mu)"></i>Phase</span></div></div>
+<div class="cd"><h2>3b. Critical path chart (network diagram)</h2><div class="w" id="nw"></div>
+<div class="lg"><span><i style="background:var(--cr)"></i>Critical path (zero float)</span><span><i style="background:var(--mu)"></i>Other dependencies</span><span>Each box: WBS, name, duration, float, start to finish. Flow runs left to right.</span></div></div>
+<div class="cd"><h2>4. S-curve (planned cumulative progress)</h2><div class="w" id="sv"></div>
+<div class="lg"><span><i style="background:var(--ac)"></i>Early start</span><span><i style="background:var(--wn)"></i>Late start</span><span>Shaded band = scheduling flexibility</span></div></div>
+<div class="cd"><h2>5. Analysis &amp; critical path</h2><div class="g" id="kp"></div><div class="w" style="margin-top:12px"><table id="cp" style="min-width:560px"></table></div></div>
+<div class="cd"><h2>6. Summary</h2><div id="sm"></div></div>
+<div class="cd"><h2>7. Recommendations</h2><ul id="rc"></ul></div>
+<div class="cd"><h2>8. Contingency plan</h2><div id="cg"></div></div>
+</main><div id="tip"></div>
+<script>
+var T=[],PH=[],cal=[];function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function ds(v){if(!v)return new Date();var a=v.split('-');return new Date(+a[0],a[1]-1,+a[2])}
+function D(i,f){return cal[i].toLocaleDateString('en-CA',f?{year:'numeric',month:'short',day:'numeric'}:{month:'short',day:'numeric'})}
+function fd(d){return d.toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})}
+function $$(n){return '$'+Math.round(n).toLocaleString('en-CA')}
+function mkCal(s,n){var w=+$('wk').value,a=[],d=new Date(s);while(a.length<n){var g=d.getDay();if(w==7||(w==6&&g>0)||(w==5&&g>0&&g<6))a.push(new Date(d));d.setDate(d.getDate()+1)}return a}
+function gen(){
+ var k=+$('cx').value,n=0;T=[];PH=[];
+ function P(x){PH.push(x);return PH.length-1}
+ function A(ph,name,d,p,raw){n++;T.push({id:n,ph:ph,name:name,d:raw?d:Math.max(1,Math.round(d*k)),p:p.join(','),c:0});return n}
+ function tails(){return T.filter(function(t){return !T.some(function(u){return u.p.split(',').indexOf(String(t.id))>=0})}).map(function(t){return t.id})}
+ var i=P('Initiation & Planning'),a=A(i,'Project kickoff & charter',3,[]),b=A(i,'Detailed planning, permits & approvals',10,[a]),last=[b],mat=0,j,q,c,tn;
+ if($('ds').checked){j=P('Design');c=A(j,'Preliminary design',15,[b]);last=[A(j,'Final design & approval',15,[c])]}
+ if($('pc').checked){q=P('Procurement');tn=A(q,'Tender / RFQ & award',20,last);mat=A(q,'Long-lead material procurement',25,[tn]);last=[tn]}
+ var e=P('Execution'),mob=A(e,'Mobilization & site setup',3,last),base=mat?[mob,mat]:[mob],pp=base,pid=0;
+ var L=$('sc').value.split('\n').map(function(x){return x.trim()}).filter(Boolean);if(!L.length)L=['Main works, 30'];
+ L.forEach(function(s){var par=s[0]=='+';if(par)s=s.slice(1).trim();var m=s.match(/^(.*?)[,|]\s*(\d+)\s*(d|days)?$/i),nm=m?m[1].trim():s,d=m?+m[2]:10,pr=(par&&pid)?pp:(pid?[pid]:base);pid=A(e,nm,d,pr,1);pp=pr});
+ var t=P('Testing & Commissioning');A(t,'Testing & inspection',7,tails());A(t,'Commissioning & training',5,tails());
+ var z=P('Closeout');A(z,'Deficiency correction',10,tails());A(z,'Final handover & as-builts',5,tails());
+ tbl();upd()}
+function tbl(){
+ var h='<tr><th>WBS</th><th>ID</th><th>Activity</th><th>Dur (wd)</th><th>Pred. IDs</th><th>Cost $ (0=auto)</th><th>Start</th><th>Finish</th><th>Float</th><th></th></tr>';
+ PH.forEach(function(n,pi){h+='<tr class="ph"><td colspan="9">'+(pi+1)+'. '+esc(n)+'</td><td><button onclick="addT('+pi+')" title="Add activity">+</button></td></tr>';var k=0;
+  T.forEach(function(t,i){if(t.ph!=pi)return;t.w=(pi+1)+'.'+(++k);h+='<tr class="ar" data-i="'+i+'"><td>'+t.w+'</td><td>'+t.id+'</td><td><input style="min-width:220px" value="'+esc(t.name)+'" oninput="T['+i+'].name=this.value;upd()"></td><td><input type="number" min="1" value="'+t.d+'" oninput="T['+i+'].d=Math.max(1,Math.round(+this.value)||1);upd()"></td><td><input value="'+esc(t.p)+'" oninput="T['+i+'].p=this.value;upd()"></td><td><input type="number" min="0" value="'+t.c+'" oninput="T['+i+'].c=+this.value||0;upd()"></td><td id="s'+t.id+'"></td><td id="f'+t.id+'"></td><td id="g'+t.id+'"></td><td><button class="x" onclick="delT('+i+')">×</button></td></tr>'})});
+ $('tb').innerHTML=h;fa()}
+function addT(pi){var id=Math.max.apply(null,T.map(function(t){return t.id}))+1,pv=T.filter(function(t){return t.ph==pi}).pop();T.push({id:id,ph:pi,name:'New activity',d:5,p:pv?String(pv.id):'',c:0});tbl();upd()}
+function delT(i){var id=T[i].id;T.splice(i,1);T.forEach(function(t){t.p=t.p.split(/[ ,;]+/).filter(function(x){return x&&x!=id}).join(',')});tbl();upd()}
+function cpm(){
+ var by={};T.forEach(function(t){by[t.id]=t});
+ T.forEach(function(t){t.pr=t.p.split(/[ ,;]+/).map(Number).filter(function(x,i,a){return x&&x!=t.id&&by[x]&&a.indexOf(x)==i});t.su=[]});
+ T.forEach(function(t){t.pr.forEach(function(x){by[x].su.push(t.id)})});
+ var ind={},q=[],o=[];T.forEach(function(t){ind[t.id]=t.pr.length;if(!t.pr.length)q.push(t)});
+ while(q.length){var t=q.shift();o.push(t);t.su.forEach(function(s){if(--ind[s]==0)q.push(by[s])})}
+ if(o.length<T.length)return null;
+ o.forEach(function(t){t.es=Math.max.apply(null,[0].concat(t.pr.map(function(x){return by[x].ef})));t.ef=t.es+t.d;t.lv=t.pr.length?Math.max.apply(null,t.pr.map(function(x){return by[x].lv}))+1:0});
+ var F=Math.max.apply(null,o.map(function(t){return t.ef}));
+ for(var i=o.length-1;i>=0;i--){var t=o[i];t.lf=t.su.length?Math.min.apply(null,t.su.map(function(x){return by[x].ls})):F;t.ls=t.lf-t.d;t.tf=t.ls-t.es;t.cr=t.tf==0}
+ return{F:F}}
+function fe(F,x){if(!x&&$('tt').value!='ex')return F;var e=T.filter(function(t){return PH[t.ph]=='Execution'});return e.length?Math.max.apply(null,e.map(function(t){return t.ef})):F}
+function exs(){var e=T.filter(function(t){return PH[t.ph]=='Execution'});return e.length?Math.min.apply(null,e.map(function(t){return t.es})):0}
+function isW(d){var g=d.getDay(),w=+$('wk').value;return w==7||(w==6&&g>0)||(w==5&&g>0&&g<6)}
+function upd(){
+ var R=cpm(),er=$('er');
+ if(!R){er.textContent='Circular dependency found. Check the predecessor IDs.';er.style.display='block';return}er.style.display='none';
+ var s0=ds($('st').value);if($('an').value=='ex'){var d0=new Date(s0),n0=exs();while(!isW(d0))d0.setDate(d0.getDate()+1);while(n0>0){d0.setDate(d0.getDate()-1);if(isW(d0))n0--}s0=d0}
+ cal=mkCal(s0,Math.ceil(R.F*1.3)+30);
+ var B=+$('bu').value||0,man=0,dur=0;T.forEach(function(t){if(t.c>0)man+=t.c;else dur+=t.d});
+ T.forEach(function(t){t.cc=!B?t.d:t.c>0?t.c:(dur?Math.max(0,B-man)*t.d/dur:0)});
+ T.forEach(function(t){$('s'+t.id).textContent=D(t.es,1);$('f'+t.id).textContent=D(t.ef-1,1);$('g'+t.id).innerHTML=t.cr?'<b class="cr">0 · critical</b>':t.tf});
+ $('gt').innerHTML=gantt(R);$('nw').innerHTML=net();var S=scurve(R);report(R,S)}
+function xl(F,x,H,W){var s='',st=Math.max(1,Math.ceil(F/10));for(var d=0;d<=F;d+=st)s+='<line x1="'+x(d)+'" x2="'+x(d)+'" y1="'+(H>0?28:0)+'" y2="'+Math.abs(H)+'" stroke="var(--bd)"/><text x="'+x(d)+'" y="'+(H>0?20:Math.abs(H)+16)+'" fill="var(--mu)" text-anchor="middle">'+D(Math.min(d,cal.length-1))+'</text>';return s}
+function gantt(R){
+ var W=1000,L=260,RH=22,rows=[],F=R.F;
+ PH.forEach(function(n,pi){var ts=T.filter(function(t){return t.ph==pi});if(!ts.length)return;rows.push({h:1,pi:pi,n:(pi+1)+'. '+n,s:Math.min.apply(null,ts.map(function(t){return t.es})),e:Math.max.apply(null,ts.map(function(t){return t.ef}))});ts.forEach(function(t){rows.push({t:t})})});
+ var H=40+rows.length*RH,x=function(d){return (L+d*(W-L-12)/F).toFixed(1)};
+ var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:720px" font-size="11" font-family="system-ui,sans-serif">'+xl(F,x,H);
+ rows.forEach(function(r,i){var y=34+i*RH;
+  if(r.h)s+='<text x="4" y="'+(y+14)+'" font-weight="700" fill="var(--tx)">'+esc(r.n)+'</text><rect x="'+x(r.s)+'" y="'+(y+7)+'" width="'+Math.max(2,x(r.e)-x(r.s))+'" height="5" fill="var(--mu)" class="hb" data-p="'+r.pi+'"/>';
+  else{var t=r.t;s+='<text x="14" y="'+(y+14)+'" fill="var(--tx)">'+esc(t.w+' '+t.name.slice(0,36))+'</text>'+(t.tf>0?'<rect x="'+x(t.ef)+'" y="'+(y+8)+'" width="'+(x(t.ef+t.tf)-x(t.ef))+'" height="4" fill="var(--ac)" opacity=".25"/>':'')+'<rect x="'+x(t.es)+'" y="'+(y+3)+'" width="'+Math.max(2,x(t.ef)-x(t.es))+'" height="14" rx="2" class="hb" data-t="'+t.id+'" fill="'+(t.cr?'var(--cr)':'var(--ac)')+'"/>'}});
+ return s+'</svg>'}
+function scurve(R){
+ var F=R.F,e=[],l=[],i,tot=0,wk=+$('wk').value;for(i=0;i<=F;i++){e.push(0);l.push(0)}
+ T.forEach(function(t){var r=t.cc/t.d,d;tot+=t.cc;for(d=t.es;d<t.ef;d++)e[d+1]+=r;for(d=t.ls;d<t.lf;d++)l[d+1]+=r});
+ for(i=1;i<=F;i++){e[i]+=e[i-1];l[i]+=l[i-1]}
+ var W=1000,H=330,L=48,b=32,x=function(d){return (L+d*(W-L-12)/F).toFixed(1)},y=function(v){return (H-b-(tot?v/tot:0)*(H-b-14)).toFixed(1)};
+ var P=function(a){return a.map(function(v,d){return x(d)+','+y(v)})};
+ var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:600px" font-size="11" font-family="system-ui,sans-serif">';
+ [0,25,50,75,100].forEach(function(g){var yy=H-b-g/100*(H-b-14);s+='<line x1="'+L+'" x2="'+(W-12)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--bd)"/><text x="'+(L-6)+'" y="'+(yy+4)+'" text-anchor="end" fill="var(--mu)">'+g+'%</text>'});
+ s+=xl(F,x,-(H-b),W).replace(/y1="0"/g,'y1="14"');
+ s+='<polygon points="'+P(e).concat(P(l).reverse()).join(' ')+'" fill="var(--ac)" opacity=".12"/><polyline points="'+P(e).join(' ')+'" fill="none" stroke="var(--ac)" stroke-width="2.5"/><polyline points="'+P(l).join(' ')+'" fill="none" stroke="var(--wn)" stroke-width="2.5"/></svg>';
+ $('sv').innerHTML=s;
+ var pk=0,pw=0;for(var w=0;w*wk<F;w++){var v=e[Math.min(F,(w+1)*wk)]-e[w*wk];if(v>pk){pk=v;pw=w}}
+ return{pk:(tot&&+$('bu').value?$$(pk):Math.round(pk)+' effort-days')+' (week of '+D(pw*wk)+')',pkv:pk,tot:tot}}
+function net(){
+ var cols=[],NW=150,NH=50,GX=44,GY=12,pos={},mx=0,e0='',e1='',n='';
+ T.slice().sort(function(a,b){return a.es-b.es||a.id-b.id}).forEach(function(t){(cols[t.lv]=cols[t.lv]||[]).push(t)});
+ cols.forEach(function(c){if(c)mx=Math.max(mx,c.length)});
+ var W=cols.length*(NW+GX)+10,H=mx*(NH+GY)+10;
+ cols.forEach(function(c,i){if(c)c.forEach(function(t,r){pos[t.id]={x:5+i*(NW+GX),y:5+r*(NH+GY)+(mx-c.length)*(NH+GY)/2}})});
+ T.forEach(function(t){t.pr.forEach(function(p){var u=T.filter(function(z){return z.id==p})[0],a=pos[p],b=pos[t.id],cr=u.cr&&t.cr&&u.ef==t.es,ya=a.y+NH/2,yb=b.y+NH/2,d='<path d="M'+(a.x+NW)+','+ya+' C'+(a.x+NW+GX*.6)+','+ya+' '+(b.x-GX*.6)+','+yb+' '+b.x+','+yb+'" fill="none" stroke="'+(cr?'var(--cr)':'var(--mu)')+'" stroke-width="'+(cr?2.5:1)+'" opacity="'+(cr?1:.5)+'"/>';if(cr)e1+=d;else e0+=d})});
+ T.forEach(function(t){var q=pos[t.id],tx=function(dy,s,x){return '<text x="'+(q.x+6)+'" y="'+(q.y+dy)+'" fill="'+x+'"'+(dy<20?' font-weight="700"':'')+'>'+s+'</text>'};
+  n+='<rect x="'+q.x+'" y="'+q.y+'" width="'+NW+'" height="'+NH+'" rx="6" fill="var(--cd)" stroke="'+(t.cr?'var(--cr)':'var(--bd)')+'" stroke-width="'+(t.cr?2:1)+'"/>'+tx(14,esc(t.w+' '+t.name.slice(0,19)),'var(--tx)')+tx(28,t.d+' d · float '+t.tf,t.cr?'var(--cr)':'var(--mu)')+tx(42,D(t.es)+' → '+D(t.ef-1),'var(--mu)')});
+ return '<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" font-size="10" font-family="system-ui,sans-serif">'+e0+e1+n+'</svg>'}
+function cont(C,F,B,bf){
+ var k=+$('cx').value,pct=(k<1?5:k>1?15:10)+(C.length/T.length>.6?2:0),ca=+$('ca').value||0,amt=ca>0?ca:B*pct/100,cd=C.reduce(function(a,t){return a+t.d},0)||1,bi=Math.min(F+bf-1,cal.length-1),tg=$('tg').value?ds($('tg').value):null,a=Math.round(bf/3),b=Math.round(2*bf/3),
+ kt=function(x){return '<div class="k"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>'};
+ function rk(n){return /procure|tender|material|equipment|supply/i.test(n)?['Supply delay or price escalation','Order early, qualify an alternate supplier, lock pricing in the contract','Procurement lead']:/permit|approval|review|charter|planning/i.test(n)?['Approval or permit delay','Submit a complete package early, hold weekly status with the approver','Project manager']:/design|engineer/i.test(n)?['Design changes or review iterations','Freeze scope, set review deadlines, get early stakeholder sign-off','Design lead']:/test|commission|inspect|handover|deficien/i.test(n)?['Failed inspection or rework','Pre-inspect, build the punch list early, book a re-test slot','QA lead']:['Weather, site conditions or crew productivity','Add crews or shifts, plan weather windows, investigate ground and utilities early, keep standby equipment','Site superintendent']}
+ var s='<h3 style="font-size:14px;margin:0 0 6px">A. Contingency reserves</h3><div class="g">'+[['Schedule reserve',bf+' working days ('+Math.round(bf/F*100)+'% of '+F+')'],['Finish with reserve',D(bi,1)],['Cost reserve',amt>0?$$(amt)+(ca>0?(B?' ('+(amt/B*100).toFixed(1)+'% of budget, entered)':' (entered)'):' ('+pct+'% of budget)'):'Enter a budget'],['Budget incl. reserve',B?$$(B+amt):'n/a']].map(kt).join('')+'</div>';
+ var ti=Math.min(fe(F)+bf-1,cal.length-1);if(tg&&cal[ti]>tg)s+='<p class="wn">'+($('tt').value=='ex'?'Execution':'Project')+' finish with reserve is '+Math.round((cal[ti]-tg)/864e5)+' days after the target. Seek a target extension, reduce scope or crash critical activities.</p>';
+ s+='<p class="sub" style="margin-top:8px">Where the contingency boxes are left at 0, reserves are planning assumptions: 5%, 10% or 15% of budget for Low, Medium or High complexity, plus 2% when over 60% of activities are critical. Adjust to your organization\u2019s policy.</p>';
+ s+='<h3 style="font-size:14px;margin:14px 0 6px">B. Risk response for the main critical activities</h3><div class="w"><table style="min-width:780px"><tr><th>WBS</th><th>Activity</th><th>Key risk</th><th>Trigger</th><th>Contingency response</th><th>Reserve share</th><th>Owner</th></tr>'+C.slice().sort(function(x,y){return y.d-x.d}).slice(0,5).map(function(t){var r=rk(t.name);return '<tr><td>'+t.w+'</td><td>'+esc(t.name)+' ('+t.d+' d)</td><td>'+r[0]+'</td><td>Progress more than 10% behind plan for 2 weeks, or forecast slips over '+Math.max(1,Math.round(t.d*.1))+' day(s)</td><td>'+r[1]+'</td><td>'+Math.max(1,Math.round(bf*t.d/cd))+' d</td><td>'+r[2]+'</td></tr>'}).join('')+'</table></div>';
+ s+='<h3 style="font-size:14px;margin:14px 0 6px">C. Escalation by schedule reserve used</h3><div class="w"><table style="min-width:600px"><tr><th>Level</th><th>Reserve used</th><th>Action</th></tr><tr><td class="ok"><b>Green</b></td><td>0 to '+a+' days</td><td>Monitor weekly. Report forecast finish and float on critical and near-critical activities.</td></tr><tr><td class="wn"><b>Amber</b></td><td>'+a+' to '+b+' days</td><td>Prepare a recovery plan. Add resources to critical activities, overlap activities where logic allows, and brief the sponsor weekly.</td></tr><tr><td class="cr"><b>Red</b></td><td>Over '+b+' days</td><td>Fast-track or crash the critical path, change scope or sequence, re-baseline the schedule, escalate to the sponsor and discuss a target extension.</td></tr></table></div>';
+ $('cg').innerHTML=s}
+function report(R,S){
+ var wk=+$('wk').value,F=R.F,C=T.filter(function(t){return t.cr}).sort(function(a,b){return a.es-b.es}),NC=T.filter(function(t){return !t.cr}),
+ near=NC.filter(function(t){return t.tf<=5}).length,avg=NC.length?NC.reduce(function(a,t){return a+t.tf},0)/NC.length:0,
+ fin=cal[F-1],cd=Math.round((fin-cal[0])/864e5)+1,sumD=T.reduce(function(a,t){return a+t.d},0),pc=Math.round(C.length/T.length*100),
+ B=+$('bu').value||0,tg=$('tg').value?ds($('tg').value):null,ov=tg?Math.round((cal[fe(F)-1]-tg)/864e5):null,nm=esc($('nm').value||'The project');
+ var K=[['Duration',F+' working days'],['Calendar span',cd+' days'],['Start',D(0,1)],['Execution start',D(exs(),1)],['Execution finish',D(fe(F,1)-1,1)],['Finish',D(F-1,1)],['Activities',T.length+' ('+C.length+' critical, '+pc+'%)'],['Near-critical (≤5 d float)',near],['Avg float, non-critical',avg.toFixed(1)+' d'],['Peak weekly spend',S.pk],['Total activity days',sumD]];
+ if(ov!=null)K.push(['Vs target ('+($('tt').value=='ex'?'execution':'project')+' finish)',ov>0?'<span class="cr">'+ov+' days late</span>':'<span class="ok">'+(-ov)+' days early</span>']);
+ $('kp').innerHTML=K.map(function(k){return '<div class="k"><span>'+k[0]+'</span><b>'+k[1]+'</b></div>'}).join('');
+ $('cp').innerHTML='<tr><th>#</th><th>WBS</th><th>Critical activity</th><th>Dur</th><th>Start</th><th>Finish</th></tr>'+C.map(function(t,i){return '<tr><td>'+(i+1)+'</td><td>'+t.w+'</td><td>'+esc(t.name)+'</td><td>'+t.d+'</td><td>'+D(t.es,1)+'</td><td>'+D(t.ef-1,1)+'</td></tr>'}).join('');
+ $('sm').innerHTML='<p class="sub">Revision <b>'+esc($('rv').value||'0')+'</b> · Created '+esc($('cr').value||'n/a')+' by '+esc($('by').value||'n/a')+'</p><p><b>'+nm+'</b> starts '+D(0,1)+' and, on a '+wk+'-day work week, finishes <b>'+D(F-1,1)+'</b> after <b>'+F+' working days</b> ('+cd+' calendar days). It has '+T.length+' activities in '+PH.length+' phases. The critical path runs through '+C.length+' activities ('+pc+'% of the total) and has zero float, so any delay there moves the finish date. '+(B?'The budget of '+$$(B)+' is spread across the schedule; spending peaks at '+S.pk+'.':'No budget was entered, so progress is weighted by activity duration.')+(ov!=null?(ov>0?' The forecast '+($('tt').value=='ex'?'execution':'project')+' finish is <b class="cr">'+ov+' days after</b> the target.':' The forecast '+($('tt').value=='ex'?'execution':'project')+' finish meets the target with '+(-ov)+' days to spare.'):'')+'</p>';
+ var R2=[],top=C.filter(function(t){return $('tt').value!='ex'||PH[t.ph]=='Execution'}).sort(function(a,b){return b.d-a.d}).slice(0,3).map(function(t){return esc(t.name)}).join(', ');
+ if(ov>0)R2.push('<span class="cr">Recover about '+Math.ceil(ov*wk/7)+' working days</span> to meet the target. Focus on the longest critical activities (<b>'+top+'</b>): add crews, extend shifts, or overlap them with predecessors.');
+ else if(ov!=null)R2.push('The target has a '+(-ov)+'-day cushion. Keep it as schedule contingency rather than releasing it.');
+ var cu=+$('cdv').value||0,bf=cu>0?Math.round(cu):Math.ceil(F*.1);R2.push((cu>0?'Schedule contingency entered: '+bf+' working days ('+Math.round(bf/F*100)+'% of the duration).':'Add a schedule contingency of about 10% ('+bf+' working days).')+' The buffered finish would be <b>'+D(Math.min(F+bf-1,cal.length-1),1)+'</b>.');
+ if(pc>60)R2.push('<span class="wn">'+pc+'% of activities are critical</span>, so there is little scheduling flexibility. Look for ways to run work in parallel or split long activities.');
+ if(near)R2.push(near+' non-critical activit'+(near>1?'ies have':'y has')+' 5 days of float or less and can become critical quickly. Monitor them as closely as the critical path.');
+ var pr=C.filter(function(t){return /procure|tender|material|permit|approval/i.test(t.name)});
+ if(pr.length)R2.push('Critical path includes <b>'+pr.map(function(t){return esc(t.name)}).join(', ')+'</b>. Start these early (pre-tender engagement, early material orders, parallel permit submissions).');
+ if(F>.85*sumD&&T.length>4)R2.push('The schedule is almost fully sequential ('+F+' days against '+sumD+' total activity days). Check which activities can overlap; mark them with + in the scope list or edit predecessor IDs.');
+ if(B)R2.push('Make sure funding and cash flow can support the peak spend of '+S.pk+'.');
+ R2.push('Confirm durations with the contractor or design team, then re-baseline and update this schedule weekly.');
+ $('rc').innerHTML=R2.map(function(x){return '<li>'+x+'</li>'}).join('');cont(C,F,B,bf);projects[cur].sum='Rev '+$('rv').value+' · '+F+' working days · finish '+D(F-1,1);side()}
+var projects=[{id:1,inp:null,T:[],PH:[]}],cur=0,pn=1,DEF=null,INP=['nm','st','an','tt','wk','bu','ca','cdv','tg','cx','sc','cr','by','rv'];
+function tgl(){document.body.classList.toggle('sbo')}
+function snap(){var o={};INP.forEach(function(i){o[i]=$(i).value});o.ds=$('ds').checked;o.pc=$('pc').checked;return o}
+function put(o){INP.forEach(function(i){$(i).value=o[i]});$('ds').checked=o.ds;$('pc').checked=o.pc}
+function sv(){var p=projects[cur];p.inp=snap();p.T=T;p.PH=PH}
+function ld(i){cur=i;var p=projects[i];put(p.inp);T=p.T;PH=p.PH;if(T.length){tbl();upd()}else gen();side()}
+function sw(i){if(i==cur)return;sv();projects.forEach(function(q){q.dl=0});ld(i)}
+function addP(){sv();var o=JSON.parse(JSON.stringify(DEF));pn++;o.nm='Project '+pn;o.cr=td();o.rv='0';projects.push({id:pn,inp:o,T:[],PH:[]});ld(projects.length-1)}
+function delP(i,e){e.stopPropagation();if(projects.length<2)return;if(!projects[i].dl){projects.forEach(function(q){q.dl=0});projects[i].dl=1;side();return}
+ sv();projects.splice(i,1);projects.forEach(function(q){q.dl=0});ld(i==cur?Math.min(i,projects.length-1):i<cur?cur-1:cur)}
+function side(){var q=($('ps').value||'').toLowerCase().trim(),h=projects.map(function(p,i){var n=i==cur?$('nm').value:p.inp.nm,by=i==cur?$('by').value:p.inp.by;if(q&&(n+' '+(by||'')+' '+(p.sum||'')).toLowerCase().indexOf(q)<0)return '';return '<div class="pi'+(i==cur?' on':'')+'" onclick="sw('+i+')"><b>'+esc(n||'Untitled')+'</b><span>'+(p.sum||'Not generated yet')+'</span>'+'<div class="ab"><button title="Copy project" onclick="copyP('+i+',event)">⧉</button>'+(projects.length>1?'<button class="x" title="Delete project" onclick="delP('+i+',event)">'+(p.dl?'Delete?':'×')+'</button>':'')+'</div></div>'}).join('');$('pl').innerHTML=h||'<p class="sub" style="margin:8px 10px">No matching projects.</p>'}
+function td(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fa(){var q=($('as').value||'').toLowerCase().trim(),v={};document.querySelectorAll('#tb tr.ar').forEach(function(r){var t=T[+r.dataset.i],m=!q||(t.w+' '+t.id+' '+t.name+' '+t.p).toLowerCase().indexOf(q)>=0;r.style.display=m?'':'none';if(m)v[t.ph]=1});document.querySelectorAll('#tb tr.ph').forEach(function(r,i){r.style.display=(!q||v[i])?'':'none'})}
+function copyP(i,e){e.stopPropagation();sv();var c=JSON.parse(JSON.stringify(projects[i]));pn++;c.id=pn;c.inp.nm+=' (copy)';c.inp.cr=td();c.inp.rv='0';projects.forEach(function(q){q.dl=0});c.dl=0;projects.splice(i+1,0,c);ld(i+1)}
+function crc(u){if(!crc.t){crc.t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;crc.t.push(c>>>0)}}var r=-1;for(var i=0;i<u.length;i++)r=crc.t[(r^u[i])&255]^(r>>>8);return(r^-1)>>>0}
+function zip(fs){var e=new TextEncoder(),L=[],Cn=[],off=0;function a(x,v,n){for(var i=0;i<n;i++)x.push(v>>>(8*i)&255)}
+ fs.forEach(function(f){var nm=e.encode(f.n),d=e.encode(f.d),c=crc(d),h=[],g=[];
+  a(h,0x04034b50,4);a(h,20,2);a(h,0,2);a(h,0,2);a(h,0,2);a(h,0x21,2);a(h,c,4);a(h,d.length,4);a(h,d.length,4);a(h,nm.length,2);a(h,0,2);
+  a(g,0x02014b50,4);a(g,20,2);a(g,20,2);a(g,0,2);a(g,0,2);a(g,0,2);a(g,0x21,2);a(g,c,4);a(g,d.length,4);a(g,d.length,4);a(g,nm.length,2);a(g,0,2);a(g,0,2);a(g,0,2);a(g,0,2);a(g,0,4);a(g,off,4);
+  L.push(new Uint8Array(h),nm,d);Cn.push(new Uint8Array(g),nm);off+=h.length+nm.length+d.length});
+ var cs=0,z=[];Cn.forEach(function(x){cs+=x.length});a(z,0x06054b50,4);a(z,0,2);a(z,0,2);a(z,fs.length,2);a(z,fs.length,2);a(z,cs,4);a(z,off,4);a(z,0,2);
+ return new Blob(L.concat(Cn,[new Uint8Array(z)]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+function xe(s){return String(s==null?'':s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function sheet(rows,w){return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>'+w.map(function(x,j){return '<col min="'+(j+1)+'" max="'+(j+1)+'" width="'+x+'" customWidth="1"/>'}).join('')+'</cols><sheetData>'+rows.map(function(r,i){return '<row r="'+(i+1)+'">'+r.map(function(c,j){if(c===''||c==null)return '';var o=typeof c=='object',v=o?c.v:c,ref=String.fromCharCode(65+j)+(i+1),s=o?' s="1"':'';return typeof v=='number'?'<c r="'+ref+'"'+s+'><v>'+v+'</v></c>':'<c r="'+ref+'"'+s+' t="inlineStr"><is><t xml:space="preserve">'+xe(v)+'</t></is></c>'}).join('')+'</row>'}).join('')+'</sheetData></worksheet>'}
+function t2r(t){return [].map.call(t.rows,function(r){return [].map.call(r.cells,function(c){var v=c.textContent.trim();return c.tagName=='TH'?{v:v,b:1}:v})})}
+function xlsx(){
+ var sl=function(s){return s.options[s.selectedIndex].text},kv=function(C,k){C.push([k.children[0].textContent,k.children[1].textContent])};
+ var A=[[{v:'Project schedule',b:1}],['Project name',$('nm').value],['Date created',$('cr').value],['Created by',$('by').value],['Revision no.',$('rv').value],['Schedule starts from',sl($('an'))],['Date entered',$('st').value],['Working days per week',+$('wk').value],['Base budget (excl. contingency)',+$('bu').value||0],['Contingency amount',+$('ca').value||0],['Schedule contingency (working days)',+$('cdv').value||0],['Target finish',$('tg').value],['Target applies to',sl($('tt'))],['Complexity',sl($('cx'))],[],[{v:'Summary',b:1}],[$('sm').textContent],[],[{v:'Recommendations',b:1}]];
+ [].forEach.call($('rc').children,function(l){A.push([l.textContent])});
+ var B=[['WBS','ID','Activity','Duration (working days)','Predecessor IDs','Cost ($)','Start','Finish','Float (days)','Critical'].map(function(x){return {v:x,b:1}})];
+ PH.forEach(function(n,pi){B.push([{v:(pi+1)+'. '+n,b:1}]);T.forEach(function(t){if(t.ph==pi)B.push([t.w,t.id,t.name,t.d,t.p,Math.round(t.cc),D(t.es,1),D(t.ef-1,1),t.tf,t.cr?'Yes':'No'])})});
+ var C=[[{v:'Key figures',b:1}]];[].forEach.call(document.querySelectorAll('#kp .k'),function(k){kv(C,k)});
+ C.push([],[{v:'Critical path',b:1}]);t2r($('cp')).forEach(function(r){C.push(r)});C.push([],[{v:'Contingency plan',b:1}]);
+ [].forEach.call($('cg').children,function(e){if(e.tagName=='H3')C.push([],[{v:e.textContent,b:1}]);else if(e.classList.contains('g'))[].forEach.call(e.children,function(k){kv(C,k)});else if(e.querySelector('table'))t2r(e.querySelector('table')).forEach(function(r){C.push(r)});else if(e.textContent)C.push([e.textContent])});
+ var S=[['Project',A,[36,60]],['Schedule',B,[8,6,44,14,16,12,14,14,11,9]],['Analysis',C,[40,40,16,16,16,16,16]]],X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',R='http://schemas.openxmlformats.org/officeDocument/2006/relationships',M='http://schemas.openxmlformats.org/spreadsheetml/2006/main',O='application/vnd.openxmlformats-officedocument.spreadsheetml.';
+ var f=[{n:'[Content_Types].xml',d:X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="'+O+'sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="'+O+'styles+xml"/>'+S.map(function(s,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="'+O+'worksheet+xml"/>'}).join('')+'</Types>'},
+ {n:'_rels/.rels',d:X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+R+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+ {n:'xl/workbook.xml',d:X+'<workbook xmlns="'+M+'" xmlns:r="'+R+'"><sheets>'+S.map(function(s,i){return '<sheet name="'+s[0]+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'}).join('')+'</sheets></workbook>'},
+ {n:'xl/_rels/workbook.xml.rels',d:X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+S.map(function(s,i){return '<Relationship Id="rId'+(i+1)+'" Type="'+R+'/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'}).join('')+'<Relationship Id="rId'+(S.length+1)+'" Type="'+R+'/styles" Target="styles.xml"/></Relationships>'},
+ {n:'xl/styles.xml',d:X+'<styleSheet xmlns="'+M+'"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>'}];
+ S.forEach(function(s,i){f.push({n:'xl/worksheets/sheet'+(i+1)+'.xml',d:sheet(s[1],s[2])})});
+ return zip(f)}
+async function exp(){var m=$('xm'),fn=(($('nm').value||'Project')+' schedule rev '+($('rv').value||'0')).replace(/[^\w\- ]+/g,'').trim()+'.xlsx';
+ try{var b=xlsx(),d=window.claude&&await claude.use('downloads');
+  if(d){await d.save({filename:fn,data:b});m.textContent='Saved '+fn}
+  else{var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fn;document.body.appendChild(a);a.click();a.remove();m.textContent='Downloaded '+fn}}
+ catch(e){m.textContent=e&&e.code=='declined'?'Save cancelled.':'Could not save the file ('+((e&&e.code)||'error')+').'}}
+var saved=null,oc=0;
+function pay(){sv();return{app:'project-scheduler',v:1,saved:new Date().toISOString(),cur:cur,pn:pn,projects:projects.map(function(p){return{id:p.id,inp:p.inp,PH:p.PH,T:p.T.map(function(t){return{id:t.id,ph:t.ph,name:t.name,d:t.d,p:t.p,c:t.c}})}})}}
+function st(){var o=pay();delete o.saved;return JSON.stringify(o)}
+function chk(){var el=$('dst');if(!el)return;var d=st()!==saved;el.textContent=d?'● Unsaved changes':'✓ All changes saved';el.className=d?'wn':'ok'}
+async function dl(fn,b){var d=window.claude&&await claude.use('downloads');if(d)await d.save({filename:fn,data:b});else{var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fn;document.body.appendChild(a);a.click();a.remove()}}
+async function fsave(){var m=$('xm'),fn='Project schedules '+td()+'.json';
+ try{await dl(fn,new Blob([JSON.stringify(pay(),null,1)],{type:'application/json'}));saved=st();chk();m.textContent='Saved '+fn+' ('+projects.length+' project'+(projects.length>1?'s':'')+'). Choose Desktop in the save dialog if you want it there.'}
+ catch(e){m.textContent=e&&e.code=='declined'?'Save cancelled.':'Could not save the file ('+((e&&e.code)||'error')+').'}}
+function fopenClick(){if(saved!==null&&st()!==saved&&!oc){oc=1;$('xm').textContent='You have unsaved changes that opening a file will replace. Click Open file again to continue, or Save file first.';return}oc=0;$('fi').click()}
+async function fopen(f){var m=$('xm');
+ try{var o=JSON.parse(await f.text());if(!o||o.app!='project-scheduler'||!Array.isArray(o.projects)||!o.projects.length||o.projects.length>50)throw 0;
+  var ps=o.projects.map(function(p,k){var i=Object.assign({},DEF,p.inp||{});INP.forEach(function(x){var el=$(x);i[x]=String(i[x]==null?DEF[x]:i[x]);if(el.options&&![].some.call(el.options,function(op){return op.value==i[x]}))i[x]=DEF[x]});
+   i.ds=!p.inp||p.inp.ds!==false;i.pc=!p.inp||p.inp.pc!==false;
+   var ph=(p.PH||[]).slice(0,30).map(String),tk=(p.T||[]).slice(0,2000).map(function(t){return{id:+t.id||0,ph:Math.max(0,Math.min(ph.length-1,+t.ph||0)),name:String(t.name||''),d:Math.max(1,Math.round(+t.d)||1),p:String(t.p||''),c:Math.max(0,+t.c||0)}});
+   return{id:+p.id||k+1,inp:i,PH:ph,T:tk}});
+  projects=ps;pn=Math.max(+o.pn||0,Math.max.apply(null,ps.map(function(p){return p.id})));var c=Math.min(Math.max(0,+o.cur||0),ps.length-1);
+  for(var k=0;k<ps.length;k++)ld(k);ld(c);saved=st();chk();m.textContent='Opened '+f.name+' ('+ps.length+' project'+(ps.length>1?'s':'')+').'}
+ catch(e){m.textContent='That file could not be opened. Choose a file saved with Save file from this app.'}}
+addEventListener('beforeunload',function(e){if(saved!==null&&st()!==saved){e.preventDefault();e.returnValue=''}});
+(function(){var g=$('gt'),tp=$('tip');
+ function tx(e){var el=e.target.closest&&e.target.closest('.hb');if(!el){tp.style.display='none';return}var h;
+  if(el.dataset.t){var t=T.filter(function(u){return u.id==el.dataset.t})[0];h='<b>'+esc(t.w+' '+t.name)+'</b><br>Duration: <b>'+t.d+' working day'+(t.d>1?'s':'')+'</b> ('+(Math.round((cal[t.ef-1]-cal[t.es])/864e5)+1)+' calendar days)<br>Work period: '+D(t.es,1)+' to '+D(t.ef-1,1)+'<br>'+(t.cr?'<b>Critical, no float</b>':'Float: '+t.tf+' day'+(t.tf>1?'s':''))}
+  else{var ts=T.filter(function(u){return u.ph==el.dataset.p}),s=Math.min.apply(null,ts.map(function(u){return u.es})),f=Math.max.apply(null,ts.map(function(u){return u.ef}));h='<b>'+esc(PH[el.dataset.p])+'</b><br>Phase span: <b>'+(f-s)+' working days</b> ('+(Math.round((cal[f-1]-cal[s])/864e5)+1)+' calendar days)<br>Work period: '+D(s,1)+' to '+D(f-1,1)}
+  tp.innerHTML=h;tp.style.display='block';var w=tp.offsetWidth,hh=tp.offsetHeight,x=Math.min(Math.max(4,e.clientX-w/2),innerWidth-w-4),y=e.clientY-hh-14,dn=y<4;if(dn)y=e.clientY+18;tp.className=dn?'dn':'';tp.style.left=x+'px';tp.style.top=y+'px';tp.style.setProperty('--ax',(e.clientX-x)+'px')}
+ g.addEventListener('mousemove',tx);g.addEventListener('click',tx);g.addEventListener('mouseleave',function(){tp.style.display='none'})})();
+(function(){var d=new Date();d.setDate(d.getDate()+((8-d.getDay())%7||7));$('st').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ ['nm','cr','by','rv','st','an','tt','wk','bu','ca','cdv','tg'].forEach(function(i){$(i).addEventListener('input',function(){if(T.length)upd()})});$('cr').value=td();DEF=snap();gen();if(innerWidth>=900)document.body.classList.add('sbo');saved=st();chk();setInterval(chk,1500)})();
+</script></body></html>
